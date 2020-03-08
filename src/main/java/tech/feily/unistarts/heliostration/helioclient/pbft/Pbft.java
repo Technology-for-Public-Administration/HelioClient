@@ -5,29 +5,26 @@ import org.java_websocket.WebSocket;
 
 import com.google.gson.Gson;
 
-import tech.feily.unistarts.heliostration.helioclient.model.FileReaderModel;
+import tech.feily.unistarts.heliostration.helioclient.model.AddrPortModel;
 import tech.feily.unistarts.heliostration.helioclient.model.MsgEnum;
 import tech.feily.unistarts.heliostration.helioclient.model.PbftMsgModel;
 import tech.feily.unistarts.heliostration.helioclient.p2p.P2pClientEnd;
 import tech.feily.unistarts.heliostration.helioclient.p2p.SocketCache;
-import tech.feily.unistarts.heliostration.helioclient.utils.FileUtil;
 
 public class Pbft {
 
     private Logger log = Logger.getLogger(Pbft.class);
     private Gson gson = new Gson();
-    private String file;
     private int port;
     
     /**
      * The Pbft of the service node does not need to be initialized,
      * because the necessary cache information needs to be.
      */
-    public Pbft(String file, int port) {
+    public Pbft(int port) {
         /**
          * Nothing to do.
          */
-        this.file = file;
         this.port = port;
     }
     
@@ -39,12 +36,46 @@ public class Pbft {
             case hello :
                 onHello(ws, msgs);
                 break;
+            case note :
+                onNote(ws, msgs);
+                break;
             case detective :
                 onDetective(ws, msgs);
                 break;
+            case confirm :
+                onConfirm(ws, msgs);
             default :
                 break;
         }
+    }
+
+
+    /**
+     * Processing of node message.
+     * 
+     * @param ws
+     * @param msgs
+     */
+    private void onConfirm(WebSocket ws, PbftMsgModel msgs) {
+        /**
+         * Nothing to do, because we just want to acquire ws of client.
+         * When the client requests this node through the p2pclientend class, we have obtained the WS of the client.
+         */
+        System.out.println(SocketCache.wss.size());
+    }
+    
+    private void onNote(WebSocket ws, PbftMsgModel msgs) {
+        if (msgs.getAp().getAddr().equals(ws.getLocalSocketAddress().getAddress().toString())
+                && msgs.getAp().getPort() == port) {
+            return;
+        }
+        PbftMsgModel msg = new PbftMsgModel();
+        msg.setMsgType(MsgEnum.detective);
+        AddrPortModel ap = new AddrPortModel();
+        ap.setAddr(ws.getLocalSocketAddress().getAddress().toString());
+        ap.setPort(port);
+        msg.setAp(ap);
+        P2pClientEnd.connect(this, "ws:/" + msgs.getAp().getAddr() + ":" + msgs.getAp().getPort(), gson.toJson(msg), port);
     }
 
     /**
@@ -57,22 +88,9 @@ public class Pbft {
         /**
          * Just return the confirm message directly to the other party.
          */
-        System.out.println("helioclient");
         PbftMsgModel msg = new PbftMsgModel();
         msg.setMsgType(MsgEnum.confirm);
-        FileReaderModel fm = FileUtil.openForR(file);
-        Integer pt = msgs.getAp().getPort();
-        String pot = FileUtil.selectByPort(fm, pt.toString());
-        System.out.println("3333");
-        Integer por = Integer.valueOf(pot);
-        System.out.println("22222");
-        if (por == port) {
-            return;
-        }
-        System.out.println("11111");
-        P2pClientEnd.connect(this, "ws:/" + ws.getRemoteSocketAddress().getAddress()
-                + ":" + por.toString(), gson.toJson(msg), file, port, false);
-        FileUtil.closeForR(fm);
+        P2pClientEnd.connect(this, "ws:/" + msgs.getAp().getAddr() + ":" + msgs.getAp().getPort(), gson.toJson(msg), port);
     }
 
     /**
