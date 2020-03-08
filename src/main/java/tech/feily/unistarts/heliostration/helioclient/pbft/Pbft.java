@@ -15,17 +15,17 @@ public class Pbft {
 
     private Logger log = Logger.getLogger(Pbft.class);
     private Gson gson = new Gson();
-    private int port;
+    private AddrPortModel ap;
     
     /**
      * The Pbft of the service node does not need to be initialized,
      * because the necessary cache information needs to be.
      */
-    public Pbft(int port) {
+    public Pbft(AddrPortModel ap) {
         /**
          * Nothing to do.
          */
-        this.port = port;
+        this.ap = ap;
     }
     
     public void handle(WebSocket ws, String msg) {
@@ -44,11 +44,21 @@ public class Pbft {
                 break;
             case confirm :
                 onConfirm(ws, msgs);
+            case update :
+                onUpdate(ws, msgs);
+                break;
             default :
                 break;
         }
     }
 
+    private void onUpdate(WebSocket ws, PbftMsgModel msgs) {
+        /**
+         * We should first verify whether the detective message comes from the root node, and temporarily omit it.
+         */
+        SocketCache.setMetaModel(msgs.getMeta());
+        System.out.println("meta缓存已更新" + SocketCache.getMetaModel().toString());
+    }
 
     /**
      * Processing of node message.
@@ -66,16 +76,14 @@ public class Pbft {
     
     private void onNote(WebSocket ws, PbftMsgModel msgs) {
         if (msgs.getAp().getAddr().equals(ws.getLocalSocketAddress().getAddress().toString())
-                && msgs.getAp().getPort() == port) {
+                && msgs.getAp().getPort() == ap.getPort()) {
             return;
         }
         PbftMsgModel msg = new PbftMsgModel();
         msg.setMsgType(MsgEnum.detective);
         AddrPortModel ap = new AddrPortModel();
-        ap.setAddr(ws.getLocalSocketAddress().getAddress().toString());
-        ap.setPort(port);
         msg.setAp(ap);
-        P2pClientEnd.connect(this, "ws:/" + msgs.getAp().getAddr() + ":" + msgs.getAp().getPort(), gson.toJson(msg), port);
+        P2pClientEnd.connect(this, "ws:/" + msgs.getAp().getAddr() + ":" + msgs.getAp().getPort(), gson.toJson(msg));
     }
 
     /**
@@ -90,7 +98,8 @@ public class Pbft {
          */
         PbftMsgModel msg = new PbftMsgModel();
         msg.setMsgType(MsgEnum.confirm);
-        P2pClientEnd.connect(this, "ws:/" + msgs.getAp().getAddr() + ":" + msgs.getAp().getPort(), gson.toJson(msg), port);
+        msg.setAp(ap);
+        P2pClientEnd.connect(this, "ws:/" + msgs.getAp().getAddr() + ":" + msgs.getAp().getPort(), gson.toJson(msg));
     }
 
     /**
@@ -107,6 +116,7 @@ public class Pbft {
          * Get own key so that you can send a request to root node.
          */
         SocketCache.setMyself(msgs.getClient());
+        SocketCache.setMetaModel(msgs.getMeta());
     }
     
 }

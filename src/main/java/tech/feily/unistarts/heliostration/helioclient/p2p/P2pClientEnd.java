@@ -25,7 +25,7 @@ public class P2pClientEnd {
      * 
      * @param wsUrl - server's url.
      */
-    public static void connect(final Pbft pbft, String wsUrl, final String msg, final int port) {
+    public static void connect(final Pbft pbft, String wsUrl, final String msg) {
         try {
             final WebSocketClient socketClient = new WebSocketClient(new URI(wsUrl)) {
 

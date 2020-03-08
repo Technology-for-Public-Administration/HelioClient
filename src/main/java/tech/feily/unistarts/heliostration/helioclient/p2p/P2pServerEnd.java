@@ -41,13 +41,8 @@ public class P2pServerEnd {
             @Override
             public void onClose(WebSocket ws, int code, String reason, boolean remote) {
                 /**
-                 * Active node minus one after disconnection.
+                 * In order to preventing metadata of the P2P network from decreasing repeatly, nothing to do here.
                  */
-                if (SocketCache.wss.contains(ws)) {
-                    SocketCache.minusAndGet();
-                    SocketCache.wss.remove(ws);
-                }
-                System.out.println(SocketCache.getMetaModel().toString());
             }
 
             @Override
@@ -58,14 +53,8 @@ public class P2pServerEnd {
             @Override
             public void onError(WebSocket ws, Exception ex) {
                 /**
-                 * Active node minus one after occuring error.
+                 * In order to preventing metadata of the P2P network from decreasing repeatly, nothing to do here.
                  */
-                if (SocketCache.wss.contains(ws)) {
-                    SocketCache.minusAndGet();
-                    SocketCache.wss.remove(ws);
-                }
-                System.out.println(SocketCache.getMetaModel().toString());
-                log.info("Client connection error!");
             }
 
             @Override

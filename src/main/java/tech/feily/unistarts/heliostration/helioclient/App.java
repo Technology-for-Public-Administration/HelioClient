@@ -18,7 +18,6 @@ public class App {
     
     public static void main( String[] args ) {
         int port = 7003;
-        Pbft pbft = new Pbft(port);
         ClientNodeModel cli = new ClientNodeModel();
         cli.setClientId("159852");
         cli.setClientKey("456123");
@@ -29,7 +28,8 @@ public class App {
         ap.setAddr("/127.0.0.1");
         ap.setPort(port);
         msg.setAp(ap);
-        P2pClientEnd.connect(pbft, "ws://localhost:7001", new Gson().toJson(msg), port);
+        Pbft pbft = new Pbft(ap);
+        P2pClientEnd.connect(pbft, "ws://localhost:7001", new Gson().toJson(msg));
         P2pServerEnd.run(pbft, port);
     }
 }
