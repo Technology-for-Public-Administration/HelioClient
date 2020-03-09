@@ -4,6 +4,7 @@ public enum MsgEnum {
 
     hello, detective, confirm,
     init, service, note,
-    update;
+    update, close, error,
+    exception;
     
 }

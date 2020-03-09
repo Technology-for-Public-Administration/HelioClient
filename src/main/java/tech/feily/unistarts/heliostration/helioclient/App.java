@@ -1,5 +1,7 @@
 package tech.feily.unistarts.heliostration.helioclient;
 
+import java.util.concurrent.TimeUnit;
+
 import com.google.gson.Gson;
 
 import tech.feily.unistarts.heliostration.helioclient.model.AddrPortModel;
@@ -16,7 +18,7 @@ import tech.feily.unistarts.heliostration.helioclient.pbft.Pbft;
  */
 public class App {
     
-    public static void main( String[] args ) {
+    public static void main( String[] args ) throws InterruptedException {
         int port = 7003;
         ClientNodeModel cli = new ClientNodeModel();
         cli.setClientId("159852");
@@ -29,7 +31,11 @@ public class App {
         ap.setPort(port);
         msg.setAp(ap);
         Pbft pbft = new Pbft(ap);
-        P2pClientEnd.connect(pbft, "ws://localhost:7001", new Gson().toJson(msg));
         P2pServerEnd.run(pbft, port);
+        /**
+         * Let the server start before sleeping for 500ms.
+         */
+        TimeUnit.MILLISECONDS.sleep(500);
+        P2pClientEnd.connect(pbft, "ws://localhost:7001", new Gson().toJson(msg), msg);
     }
 }

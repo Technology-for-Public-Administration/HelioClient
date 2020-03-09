@@ -3,12 +3,14 @@ package tech.feily.unistarts.heliostration.helioclient.p2p;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.apache.log4j.Logger;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
+import tech.feily.unistarts.heliostration.helioclient.model.MsgEnum;
+import tech.feily.unistarts.heliostration.helioclient.model.PbftMsgModel;
 import tech.feily.unistarts.heliostration.helioclient.pbft.Pbft;
+import tech.feily.unistarts.heliostration.helioclient.utils.SystemUtil;
 
 /**
  * The client program of P2P node.
@@ -18,20 +20,20 @@ import tech.feily.unistarts.heliostration.helioclient.pbft.Pbft;
  */
 public class P2pClientEnd {
 
-    private static Logger log = Logger.getLogger(P2pClientEnd.class);
+    //private static Logger log = Logger.getLogger(P2pClientEnd.class);
     
     /**
      * Client connects to a server.
      * 
      * @param wsUrl - server's url.
      */
-    public static void connect(final Pbft pbft, String wsUrl, final String msg) {
+    public static void connect(final Pbft pbft, final String wsUrl, final String msg, final PbftMsgModel pm) {
         try {
             final WebSocketClient socketClient = new WebSocketClient(new URI(wsUrl)) {
 
                 @Override
                 public void onOpen(ServerHandshake handshakedata) {
-                    sendMsg(this, msg);
+                    sendMsg(this, msg, pm);
                 }
 
                 @Override
@@ -41,17 +43,23 @@ public class P2pClientEnd {
 
                 @Override
                 public void onClose(int code, String reason, boolean remote) {
-                    log.info("Client close.");
+                    PbftMsgModel psm = new PbftMsgModel();
+                    psm.setMsgType(MsgEnum.close);
+                    SystemUtil.printlnClientCloseOrError(psm, wsUrl);
                 }
 
                 @Override
                 public void onError(Exception ex) {
-                    log.info("Client error.");
+                    PbftMsgModel psm = new PbftMsgModel();
+                    psm.setMsgType(MsgEnum.error);
+                    SystemUtil.printlnClientCloseOrError(psm, wsUrl);
                 }
             };
             socketClient.connect();
         } catch (URISyntaxException e) {
-            log.info("URISyntaxException : " + e.getMessage());
+            PbftMsgModel psm = new PbftMsgModel();
+            psm.setMsgType(MsgEnum.exception);
+            SystemUtil.printlnClientCloseOrError(psm, wsUrl);
         }
     }
 
@@ -61,8 +69,9 @@ public class P2pClientEnd {
      * @param ws - websocket
      * @param msg - Messages to send.
      */
-    public static void sendMsg(WebSocket ws, String msg) {
+    public static void sendMsg(WebSocket ws, String msg, PbftMsgModel pm) {
         ws.send(msg);
+        SystemUtil.printlnOut(pm);
     }
 
 
@@ -71,12 +80,12 @@ public class P2pClientEnd {
      * 
      * @param msg - Messages to send.
      */
-    public void broadcast(String msg) {
+    public void broadcast(String msg, PbftMsgModel pm) {
         if (SocketCache.wss.size() == 0 || msg == null || msg.equals("")) {
             return;
         }
         for (WebSocket ws : SocketCache.wss) {
-            sendMsg(ws, msg);
+            sendMsg(ws, msg, pm);
         }
     }
     
