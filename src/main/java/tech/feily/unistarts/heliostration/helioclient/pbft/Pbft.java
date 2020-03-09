@@ -50,9 +50,29 @@ public class Pbft {
             case service :
                 onUpdate(ws, msgs);
                 break;
+            case prePrepare :
+            case prepare :
+            case commit :
+                onPreCom(ws, msgs);
+                break;
+            case reply :
+                onReply(ws, msgs);
+                break;
             default :
                 break;
         }
+    }
+
+    private void onPreCom(WebSocket ws, PbftMsgModel msgs) {
+        /**
+         * Nothing to do.
+         */
+    }
+
+    private void onReply(WebSocket ws, PbftMsgModel msgs) {
+        /**
+         * Nothing to do.
+         */
     }
 
     private void onUpdate(WebSocket ws, PbftMsgModel msgs) {
