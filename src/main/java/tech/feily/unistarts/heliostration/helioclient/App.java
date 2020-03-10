@@ -35,17 +35,17 @@ public class App {
         msg.setAp(ap);
         Pbft pbft = new Pbft(ap);
         P2pServerEnd.run(pbft, port);
+        TimeUnit.MILLISECONDS.sleep(500);
+        P2pClientEnd.connect(pbft, "ws://localhost:7001", new Gson().toJson(msg), msg);
         /**
          * Let the server start before sleeping for 500ms.
          */
-        TimeUnit.MILLISECONDS.sleep(500);
-        P2pClientEnd.connect(pbft, "ws://localhost:7001", new Gson().toJson(msg), msg);
         TimeUnit.SECONDS.sleep(3);
         PbftContentModel pcm = new PbftContentModel();
         pcm.setTransaction(Arrays.asList("hello, world"));
         pcm.setDigest(SHAUtil.sha256BasedHutool(pcm.getTransaction().toString()));
-        msg.setPcm(pcm);
         pcm.setAp(ap);
+        msg.setPcm(pcm);
         msg.setMsgType(MsgEnum.request);
         P2pClientEnd.connect(pbft, "ws://localhost:7001", new Gson().toJson(msg), msg);
     }

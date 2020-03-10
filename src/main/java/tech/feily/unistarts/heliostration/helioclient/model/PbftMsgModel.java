@@ -1,5 +1,7 @@
 package tech.feily.unistarts.heliostration.helioclient.model;
 
+import java.util.List;
+
 /**
  * Message entity class of PBFT algorithm in the P2P network.
  * 
@@ -13,6 +15,7 @@ public class PbftMsgModel {
     private AddrPortModel ap;
     private MetaModel meta;
     private PbftContentModel pcm;
+    private List<AddrPortModel> apm;
     
     /**
      * @return the msgType
@@ -79,12 +82,26 @@ public class PbftMsgModel {
         this.pcm = pcm;
     }
     
+    
+    /**
+     * @return the apm
+     */
+    public List<AddrPortModel> getApm() {
+        return apm;
+    }
+    /**
+     * @param apm the apm to set
+     */
+    public void setApm(List<AddrPortModel> apm) {
+        this.apm = apm;
+    }
+    
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
         str.append("[PbftMsg] msgType = " + msgType.toString() + ", client = " + client.toString()
                 + ", ap = " + ap.toString() + ", meta = " + meta.toString()
-                + ", pcm = " + pcm.toString());
+                + ", pcm = " + pcm.toString() + ", apm = " + apm.toString());
         return str.toString();
     }
     

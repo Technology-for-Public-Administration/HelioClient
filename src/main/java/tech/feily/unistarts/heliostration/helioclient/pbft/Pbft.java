@@ -8,6 +8,7 @@ import tech.feily.unistarts.heliostration.helioclient.model.AddrPortModel;
 import tech.feily.unistarts.heliostration.helioclient.model.MsgEnum;
 import tech.feily.unistarts.heliostration.helioclient.model.PbftMsgModel;
 import tech.feily.unistarts.heliostration.helioclient.p2p.P2pClientEnd;
+import tech.feily.unistarts.heliostration.helioclient.p2p.P2pServerEnd;
 import tech.feily.unistarts.heliostration.helioclient.p2p.SocketCache;
 import tech.feily.unistarts.heliostration.helioclient.utils.SystemUtil;
 
@@ -95,7 +96,7 @@ public class Pbft {
          */
     }
     
-    private void onNote(WebSocket ws, PbftMsgModel msgs) {
+    private void onNote(WebSocket ws, PbftMsgModel msgs) {/*
         if (msgs.getAp().getAddr().equals(ws.getLocalSocketAddress().getAddress().toString())
                 && msgs.getAp().getPort() == ap.getPort()) {
             SystemUtil.println(msgs);
@@ -105,7 +106,29 @@ public class Pbft {
         msg.setMsgType(MsgEnum.detective);
         msg.setAp(ap);
         msgs.setMsgType(MsgEnum.detective);
-        P2pClientEnd.connect(this, "ws:/" + msgs.getAp().getAddr() + ":" + msgs.getAp().getPort(), gson.toJson(msg), msgs);
+        P2pClientEnd.connect(this, "ws:/" + msgs.getAp().getAddr() + ":" + msgs.getAp().getPort(), gson.toJson(msg), msgs);*/
+        PbftMsgModel msg = new PbftMsgModel();
+        msg.setMsgType(MsgEnum.detective);
+        msg.setAp(ap);  // response me.
+        if (msgs.getApm() != null) {
+            for (AddrPortModel apm : msgs.getApm()) {
+                if (apm.getAddr().equals(ap.getAddr()) && apm.getPort() == ap.getPort()) {
+                    continue;
+                } else {
+                    PbftMsgModel prt = new PbftMsgModel();
+                    prt.setMsgType(MsgEnum.detective);
+                    // to who.
+                    prt.setAp(apm);
+                    P2pClientEnd.connect(this, "ws:/" + apm.getAddr() + ":" + apm.getPort(), gson.toJson(msg), prt);
+                }
+            }
+        } else {
+            PbftMsgModel prt = new PbftMsgModel();
+            prt.setMsgType(MsgEnum.detective);
+            // to who.
+            prt.setAp(msgs.getAp());
+            P2pClientEnd.connect(this, "ws:/" + msgs.getAp().getAddr() + ":" + msgs.getAp().getPort(), gson.toJson(msg), prt);
+        }
     }
 
     /**
@@ -122,7 +145,8 @@ public class Pbft {
         msg.setMsgType(MsgEnum.confirm);
         msg.setAp(ap);
         msgs.setMsgType(MsgEnum.confirm);
-        P2pClientEnd.connect(this, "ws:/" + msgs.getAp().getAddr() + ":" + msgs.getAp().getPort(), gson.toJson(msg), msgs);
+        //P2pClientEnd.connect(this, "ws:/" + msgs.getAp().getAddr() + ":" + msgs.getAp().getPort(), gson.toJson(msg), msgs);
+        P2pServerEnd.sendMsg(ws, gson.toJson(msg), msgs);
     }
 
     /**
