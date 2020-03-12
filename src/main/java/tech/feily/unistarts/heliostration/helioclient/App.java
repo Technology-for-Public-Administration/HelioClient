@@ -47,7 +47,7 @@ public class App {
         cim.setTimestamp(System.currentTimeMillis());
         cim.setTo("Pengfei Zhang");
         cim.setType("email");
-        TimeUnit.SECONDS.sleep(3);
+        TimeUnit.SECONDS.sleep(5);
         PbftContentModel pcm = new PbftContentModel();
         pcm.setTransaction(Arrays.asList(new Gson().toJson(cim)));
         pcm.setDigest(SHAUtil.sha256BasedHutool(pcm.getTransaction().toString()));
@@ -62,8 +62,22 @@ public class App {
         cim1.setTimestamp(System.currentTimeMillis());
         cim1.setTo("Feily Zhang");
         cim1.setType("email");
-        TimeUnit.SECONDS.sleep(3);
+        TimeUnit.SECONDS.sleep(1);
         pcm.setTransaction(Arrays.asList(new Gson().toJson(cim1)));
+        pcm.setDigest(SHAUtil.sha256BasedHutool(pcm.getTransaction().toString()));
+        pcm.setAp(ap);
+        msg.setPcm(pcm);
+        msg.setMsgType(MsgEnum.request);
+        P2pClientEnd.connect(pbft, "ws://localhost:7001", new Gson().toJson(msg), msg);
+
+        ContentInfoModel cim2 = new ContentInfoModel();
+        cim2.setFrom("Pengfei Zhang");
+        cim2.setContent("nihao, shijie");
+        cim2.setTimestamp(System.currentTimeMillis());
+        cim2.setTo("Feily Zhang");
+        cim2.setType("email");
+        TimeUnit.SECONDS.sleep(1);
+        pcm.setTransaction(Arrays.asList(new Gson().toJson(cim2)));
         pcm.setDigest(SHAUtil.sha256BasedHutool(pcm.getTransaction().toString()));
         pcm.setAp(ap);
         msg.setPcm(pcm);
