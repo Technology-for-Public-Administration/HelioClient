@@ -8,7 +8,6 @@ import org.java_websocket.server.WebSocketServer;
 
 import tech.feily.unistarts.heliostration.helioclient.model.PbftMsgModel;
 import tech.feily.unistarts.heliostration.helioclient.pbft.Pbft;
-import tech.feily.unistarts.heliostration.helioclient.utils.SystemUtil;
 
 /**
  * The server program of P2P node.
@@ -61,8 +60,8 @@ public class P2pServerEnd {
             @Override
             public void onStart() {
                 System.out.println("Client start successfully!");
-                System.out.println("------------------------------------------------------------------------------------");
-                SystemUtil.printHead();
+                //System.out.println("------------------------------------------------------------------------------------");
+                //SystemUtil.printHead();
             }
             
         };
@@ -79,7 +78,7 @@ public class P2pServerEnd {
      */
     public static void sendMsg(WebSocket ws, String msg, PbftMsgModel pm) {
         ws.send(msg);
-        SystemUtil.printlnOut(pm);
+        //SystemUtil.printlnOut(pm);
     }
     
     /**

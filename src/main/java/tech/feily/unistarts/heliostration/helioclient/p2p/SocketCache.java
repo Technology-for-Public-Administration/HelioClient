@@ -1,9 +1,12 @@
 package tech.feily.unistarts.heliostration.helioclient.p2p;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.java_websocket.WebSocket;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import tech.feily.unistarts.heliostration.helioclient.model.ClientNodeModel;
@@ -33,6 +36,8 @@ public class SocketCache {
     private static MetaModel metaModel = new MetaModel();
     
     private static ClientNodeModel myself = new ClientNodeModel();
+    public static Map<Integer, Integer> comNum = Maps.newConcurrentMap();
+    public static AtomicInteger ack = new AtomicInteger(-1);
     
     /**
      * @return the myself

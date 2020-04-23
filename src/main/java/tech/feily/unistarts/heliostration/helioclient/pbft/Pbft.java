@@ -10,7 +10,6 @@ import tech.feily.unistarts.heliostration.helioclient.model.PbftMsgModel;
 import tech.feily.unistarts.heliostration.helioclient.p2p.P2pClientEnd;
 import tech.feily.unistarts.heliostration.helioclient.p2p.P2pServerEnd;
 import tech.feily.unistarts.heliostration.helioclient.p2p.SocketCache;
-import tech.feily.unistarts.heliostration.helioclient.utils.SystemUtil;
 
 public class Pbft {
 
@@ -33,7 +32,7 @@ public class Pbft {
         //log.info("From " + ws.getRemoteSocketAddress().getAddress().toString() + ":"
                 //+ ws.getRemoteSocketAddress().getPort() + ", message is " + msg);
         PbftMsgModel msgs = gson.fromJson(msg, PbftMsgModel.class);
-        SystemUtil.printlnIn(msgs);
+        //SystemUtil.printlnIn(msgs);
         switch (msgs.getMsgType()) {
             case hello :
                 onHello(ws, msgs);
@@ -64,6 +63,15 @@ public class Pbft {
         }
     }
 
+    public static void displayInfo(PbftMsgModel msg) {
+        String header = "item       | value\n----------------------------------------";
+        String sender = "MsgSender  | " + msg.getPcm().getAp().toString();
+        String msgCon = "MsgContent | " + msg.getPcm().getTransaction().toString();
+        String digest = "MsgDigest  | " + msg.getPcm().getDigest(); 
+        String reqNum = "RequestNum | " + msg.getPcm().getReqNum();
+        System.out.println(header + "\n" + sender + "\n" + msgCon + "\n" + digest + "\n" + reqNum + "\n");
+    }
+    
     private void onPreCom(WebSocket ws, PbftMsgModel msgs) {
         /**
          * Nothing to do.
@@ -71,9 +79,19 @@ public class Pbft {
     }
 
     private void onReply(WebSocket ws, PbftMsgModel msgs) {
-        /**
-         * Nothing to do.
-         */
+        if (SocketCache.ack.get() >= msgs.getPcm().getReqNum()) return;
+        if (!SocketCache.comNum.containsKey(msgs.getPcm().getReqNum())) {
+            SocketCache.comNum.put(msgs.getPcm().getReqNum(), 1);
+        } else {
+            SocketCache.comNum.put(msgs.getPcm().getReqNum(), SocketCache.comNum.get(msgs.getPcm().getReqNum()) + 1);
+        }
+        if (SocketCache.comNum.get(msgs.getPcm().getReqNum()) >= (2 * SocketCache.getMetaModel().getMaxf() + 1)
+                && SocketCache.ack.get() < msgs.getPcm().getReqNum()) {
+            SocketCache.ack.incrementAndGet();
+            System.out.println("Successful, the transaction information is as follows.");
+            displayInfo(msgs);
+            SocketCache.comNum.remove(msgs.getPcm().getReqNum());
+        }
     }
 
     private void onUpdate(WebSocket ws, PbftMsgModel msgs) {

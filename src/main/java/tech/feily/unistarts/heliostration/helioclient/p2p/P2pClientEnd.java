@@ -71,7 +71,7 @@ public class P2pClientEnd {
      */
     public static void sendMsg(WebSocket ws, String msg, PbftMsgModel pm) {
         ws.send(msg);
-        SystemUtil.printlnOut(pm);
+        //SystemUtil.printlnOut(pm);
     }
 
 
